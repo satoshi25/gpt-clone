@@ -22,6 +22,20 @@ if "session" not in st.session_state:
 
 session = st.session_state["session"]
 
+async def paint_history():
+    messages = await session.get_items()
+
+    for message in messages:
+        with st.chat_message(message["role"]):
+            if message["role"] == "user":
+                st.write(message["content"])
+            else:
+                if message["type"] == "message":
+                    st.write(message["content"][0]["text"])
+
+asyncio.run(paint_history())
+
+
 async def run_agent(message):
     stream = Runner.run_streamed(agent, message, session=session)
 
