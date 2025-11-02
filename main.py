@@ -1,14 +1,11 @@
 import streamlit as st
+from agents import Agent, Runner, SQLiteSession
 
-if "is_amdin" not in st.session_state:
-    st.session_state["is_admin"] = False
+if "session" not in st.session_state:
+    st.session_state["session"] = SQLiteSession(
+        "chat-history", 
+        "chat-gpt-clone-memory.db"
+    )
 
-st.header("Hello!")
+session = st.session_state["session"]
 
-name = st.text_input("What is your name?")
-
-if name:
-    st.write(f"Hello {name}")
-    st.session_state["is_admin"] = True
-
-print(st.session_state["is_admin"])
