@@ -1,6 +1,7 @@
 import streamlit as st
 
-st.session_state["is_admin"] = False
+if "is_amdin" not in st.session_state:
+    st.session_state["is_admin"] = False
 
 st.header("Hello!")
 
