@@ -2,6 +2,16 @@ import asyncio
 import streamlit as st
 from agents import Agent, Runner, SQLiteSession
 
+if "agent" not in st.session_state:
+    st.session_state["agent"] = Agent(
+        name="ChatGPT Clone",
+        instructions="""
+        You are a helpful assistant.
+        """
+    )
+
+agent = st.session_state["agent"]
+
 if "session" not in st.session_state:
     st.session_state["session"] = SQLiteSession(
         "chat-history", 
