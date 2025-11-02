@@ -15,3 +15,9 @@ with st.sidebar:
     if reset:
         asyncio.run(session.clear_session())
     st.write(asyncio.run(session.get_items()))
+
+prompt = st.chat_input("Write a message for your assistant.")
+
+if prompt:
+    with st.chat_message("human"):
+        st.write(prompt)
