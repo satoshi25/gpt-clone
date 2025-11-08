@@ -41,17 +41,32 @@ async def paint_history():
             with st.chat_message("ai"):
                 st.write("🔍 Search the web ...")
 
-asyncio.run(paint_history())
 
+def update_status(status_container, event):
+    
+    status_messages = {
+        "response.web_search_call.completed": ("✅ Web search complete.", "complete"),
+        "response.web_search_call.in_progress": ("🔍 Web search in progress ...", "running"),
+        "response.web_search_call.searching": ("🔍 Starting web search ...", "running"),
+    }
+
+    if event in status_messages:
+        label, state = status_messages[event]
+        status_container.update(label=label, state=state)
+
+asyncio.run(paint_history())
 
 async def run_agent(message):
     with st.chat_message("ai"):
+        status_container = st.status("⏳", expanded=False)
         text_placeholder = st.empty()
         response = ""
         stream = Runner.run_streamed(agent, message, session=session)
 
         async for event in stream.stream_events():
             if event.type == "raw_response_event":
+                update_status(status_container, event.data.type)
+
                 if event.data.type == "response.output_text.delta":
                     response += event.data.delta
                     text_placeholder.write(response)
