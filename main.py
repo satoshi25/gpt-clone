@@ -2,7 +2,9 @@ import dotenv
 dotenv.load_dotenv()
 import asyncio
 import streamlit as st
-from agents import Agent, Runner, SQLiteSession, WebSearchTool
+from agents import Agent, Runner, SQLiteSession, WebSearchTool, FileSearchTool
+
+VECTOR_STORE_ID = "vs_690f02c40850819183c5914a8caf9742"
 
 if "agent" not in st.session_state:
     st.session_state["agent"] = Agent(
@@ -13,7 +15,14 @@ if "agent" not in st.session_state:
         You have access to the following tools:
             - WebSearchTool: Use this when the user asks a questions that isn't in your training data. use this to learn about current events.
         """,
-        tools=[WebSearchTool()]
+        tools=[
+            WebSearchTool(),
+            FileSearchTool(
+                vector_store_ids=[VECTOR_STORE_ID],
+                max_num_results=3
+            )
+        ]
+
     )
 
 agent = st.session_state["agent"]
