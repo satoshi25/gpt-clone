@@ -7,7 +7,8 @@ from agents import Agent, Runner, SQLiteSession, WebSearchTool, FileSearchTool
 
 client = OpenAI()
 
-VECTOR_STORE_ID = "vs_690f02c40850819183c5914a8caf9742"
+vector_store_id = dotenv.load_dotenv("VECTOR_STORE_ID")
+
 
 if "agent" not in st.session_state:
     st.session_state["agent"] = Agent(
@@ -22,7 +23,7 @@ if "agent" not in st.session_state:
         tools=[
             WebSearchTool(),
             FileSearchTool(
-                vector_store_ids=[VECTOR_STORE_ID],
+                vector_store_ids=[vector_store_id],
                 max_num_results=3
             )
         ]
@@ -49,7 +50,7 @@ async def paint_history():
                     st.write(message["content"])
                 else:
                     if message["type"] == "message":
-                        st.write(message["content"][0]["text"])
+                        st.write(message["content"][0]["text"].replace("$", "\$"))
         if "type" in message:
             if message["type"] == "web_search_call":
                 with st.chat_message("ai"):
@@ -90,7 +91,7 @@ async def run_agent(message):
 
                 if event.data.type == "response.output_text.delta":
                     response += event.data.delta
-                    text_placeholder.write(response)
+                    text_placeholder.write(response.replace("$", "\$"))
 
 prompt = st.chat_input(
     "Write a message for your assistant.",
@@ -111,7 +112,7 @@ if prompt:
 
                     status.update(label="🗂️ Attaching file ...")
                     client.vector_stores.files.create(
-                        vector_store_id=VECTOR_STORE_ID,
+                        vector_store_id=vector_store_id,
                         file_id=uploaded_file.id
                     )
                     
