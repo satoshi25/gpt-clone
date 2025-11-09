@@ -61,6 +61,9 @@ def update_status(status_container, event):
         "response.web_search_call.completed": ("✅ Web search complete.", "complete"),
         "response.web_search_call.in_progress": ("🔍 Web search in progress ...", "running"),
         "response.web_search_call.searching": ("🔍 Starting web search ...", "running"),
+        "response.file_search_call.completed": ("✅ File search complete.", "complete"),
+        "response.file_search_call.in_progress": ("🔍 File search in progress...", "running"),
+        "response.file_search_call.searching": ("🔍 File search search ...", "running"),
     }
 
     if event in status_messages:
@@ -93,7 +96,7 @@ prompt = st.chat_input(
 if prompt:
 
     for file in prompt.files:
-        if file.type.startswith == "text/":
+        if file.type.startswith("text/"):
             with st.chat_message("ai"):
                 with st.status("⏳ Uploading file ...") as status:
                     uploaded_file = client.files.create(
@@ -101,18 +104,18 @@ if prompt:
                         purpose="user_data"
                     )
 
-                    status.update("⏳ Attaching file ...")
+                    status.update(label="⏳ Attaching file ...")
                     client.vector_stores.files.create(
                         vector_store_id=VECTOR_STORE_ID,
                         file_id=uploaded_file.id
                     )
                     
-                    status.update("✅ File uploaded", state="complete")
+                    status.update(label="✅ File uploaded", state="complete")
 
     if prompt.text:
         with st.chat_message("human"):
-            st.write(prompt)
-        asyncio.run(run_agent(prompt))
+            st.write(prompt["text"])
+        asyncio.run(run_agent(prompt["text"]))
 
 with st.sidebar:
     reset = st.button("Reset memory")
