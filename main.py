@@ -1,8 +1,11 @@
 import dotenv
 dotenv.load_dotenv()
+from openai import OpenAI
 import asyncio
 import streamlit as st
 from agents import Agent, Runner, SQLiteSession, WebSearchTool, FileSearchTool
+
+client = OpenAI()
 
 VECTOR_STORE_ID = "vs_690f02c40850819183c5914a8caf9742"
 
@@ -80,12 +83,35 @@ async def run_agent(message):
                     response += event.data.delta
                     text_placeholder.write(response)
 
-prompt = st.chat_input("Write a message for your assistant.")
+prompt = st.chat_input(
+    "Write a message for your assistant.",
+    accept_file=True,
+    file_type=["txt"],
+)
 
 if prompt:
-    with st.chat_message("human"):
-        st.write(prompt)
-    asyncio.run(run_agent(prompt))
+
+    for file in prompt.files:
+        if file.type.startswith == "text/":
+            with st.chat_message("ai"):
+                with st.status("⏳ Uploading file ...") as status:
+                    uploaded_file = client.files.create(
+                        file=(file.name, file.getvalue()),
+                        purpose="user_data"
+                    )
+
+                    status.update("⏳ Attaching file ...")
+                    client.vector_stores.files.create(
+                        vector_store_id=VECTOR_STORE_ID,
+                        file_id=uploaded_file.id
+                    )
+                    
+                    status.update("✅ File uploaded", state="complete")
+
+    if prompt.text:
+        with st.chat_message("human"):
+            st.write(prompt)
+        asyncio.run(run_agent(prompt))
 
 with st.sidebar:
     reset = st.button("Reset memory")
