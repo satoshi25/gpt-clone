@@ -50,10 +50,16 @@ async def paint_history():
                 else:
                     if message["type"] == "message":
                         st.write(message["content"][0]["text"])
-        if "type" in message and message["type"] == "web_search_call":
-            with st.chat_message("ai"):
-                st.write("🔍 Search the web ...")
+        if "type" in message:
+            if message["type"] == "web_search_call":
+                with st.chat_message("ai"):
+                    st.write("🔍 Search the web ...")
+            elif message["type"] == "file_search_call":
+                with st.chat_message("ai"):
+                    st.write("🗂️ Search the file ...")
+                
 
+asyncio.run(paint_history())
 
 def update_status(status_container, event):
     
@@ -62,15 +68,14 @@ def update_status(status_container, event):
         "response.web_search_call.in_progress": ("🔍 Web search in progress ...", "running"),
         "response.web_search_call.searching": ("🔍 Starting web search ...", "running"),
         "response.file_search_call.completed": ("✅ File search complete.", "complete"),
-        "response.file_search_call.in_progress": ("🔍 File search in progress...", "running"),
-        "response.file_search_call.searching": ("🔍 File search search ...", "running"),
+        "response.file_search_call.in_progress": ("🗂️ File search in progress...", "running"),
+        "response.file_search_call.searching": ("🗂️ Starting file search ...", "running"),
     }
 
     if event in status_messages:
         label, state = status_messages[event]
         status_container.update(label=label, state=state)
 
-asyncio.run(paint_history())
 
 async def run_agent(message):
     with st.chat_message("ai"):
@@ -104,7 +109,7 @@ if prompt:
                         purpose="user_data"
                     )
 
-                    status.update(label="⏳ Attaching file ...")
+                    status.update(label="🗂️ Attaching file ...")
                     client.vector_stores.files.create(
                         vector_store_id=VECTOR_STORE_ID,
                         file_id=uploaded_file.id
